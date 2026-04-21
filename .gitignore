@@ -1,0 +1,35 @@
+# Virtual env
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type checking / linting
+.mypy_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs / temp
+*.log
+tmp/
+temp/
+
+# Data (ignore heavy stuff, keep structure)
+data/raw/*
+data/outputs/*
+!data/raw/.gitkeep
+!data/outputs/.gitkeep
