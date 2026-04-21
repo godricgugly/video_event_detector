@@ -31,5 +31,7 @@ temp/
 # Data (ignore heavy stuff, keep structure)
 data/raw/*
 data/outputs/*
+data/references/*
 !data/raw/.gitkeep
 !data/outputs/.gitkeep
+!data/references/.gitkeep
