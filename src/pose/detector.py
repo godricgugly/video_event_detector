@@ -27,7 +27,6 @@ class PoseDetector:
         if not result.pose_landmarks:
             return None
 
-        # VECTORISED OUTPUT
         landmarks = np.array(
             [[
                 lm.x,
