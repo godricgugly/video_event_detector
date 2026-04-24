@@ -20,21 +20,18 @@ class VideoLoader:
 
     def __iter__(self):
         return self
-
+    
     def __next__(self):
-        while True:
-            ret, frame = self.cap.read()
+        for _ in range(self.skip_frames - 1):
+            self.cap.grab()
 
-            if not ret:
-                self.cap.release()
-                raise StopIteration
+        ret, frame = self.cap.read()
 
-            self._frame_index += 1
+        if not ret:
+            self.cap.release()
+            raise StopIteration
 
-            if self._frame_index % self.skip_frames != 0:
-                continue
-
-            return frame
+        return frame
 
     def release(self):
         if self.cap.isOpened():
