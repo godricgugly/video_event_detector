@@ -10,7 +10,6 @@ class VideoLoader:
             raise ValueError(f"Could not open video: {video_path}")
 
         self.skip_frames = max(1, skip_frames)
-        self._frame_index = 0
 
         # metadata
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)

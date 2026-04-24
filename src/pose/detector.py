@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import mediapipe as mp
 
 
@@ -16,27 +17,26 @@ class PoseDetector:
 
     def process(self, frame):
         """
-        Input: BGR frame (OpenCV)
-        Output: list of landmarks or None
+        Input: BGR frame
+        Output: np.array shape (33, 4) or None
         """
 
-        # Convert BGR → RGB (IMPORTANT)
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
         result = self.pose.process(rgb_frame)
 
         if not result.pose_landmarks:
             return None
 
-        landmarks = []
-
-        for lm in result.pose_landmarks.landmark:
-            landmarks.append({
-                "x": lm.x,
-                "y": lm.y,
-                "z": lm.z,
-                "visibility": lm.visibility
-            })
+        # VECTORISED OUTPUT
+        landmarks = np.array(
+            [[
+                lm.x,
+                lm.y,
+                lm.z,
+                lm.visibility
+            ] for lm in result.pose_landmarks.landmark],
+            dtype=np.float32
+        )
 
         return landmarks
 

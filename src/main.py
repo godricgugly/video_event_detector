@@ -37,7 +37,7 @@ ref_landmarks_list = []
 
 for frame in ref_loader:
     lm = pose_detector.process(frame)
-    if lm:
+    if lm is not None:
         norm = normalize_landmarks(lm)
         ref_landmarks_list.append(norm)
 
@@ -66,7 +66,7 @@ detector = EventDetector(info["fps"], threshold=similarity_threshold, duration_s
 
 for i, frame in enumerate(loader):
     lm = pose_detector.process(frame)
-    if not lm:
+    if lm is None:
         continue
     norm = normalize_landmarks(lm)
     sim = similarity_score(norm, reference_pose)
