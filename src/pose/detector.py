@@ -9,7 +9,7 @@ class PoseDetector:
         self.pose = self.mp_pose.Pose(
             static_image_mode=False,
             model_complexity=model_complexity,
-            smooth_landmarks=True,
+            smooth_landmarks=True, # False could improve performance for long videos
             enable_segmentation=False,
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=0.5,
