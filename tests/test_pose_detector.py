@@ -1,6 +1,7 @@
+import numpy as np
 import cv2
-from src.pose.detector import PoseDetector
 from unittest.mock import MagicMock
+from src.pose.detector import PoseDetector
 
 
 def test_pose_detector_runs():
@@ -9,8 +10,10 @@ def test_pose_detector_runs():
     frame = cv2.imread("tests/assets/frame.jpg")
     landmarks = detector.process(frame)
 
-    # It may or may not detect a pose — both are valid
-    assert landmarks is None or isinstance(landmarks, list)
+    assert landmarks is None or isinstance(landmarks, np.ndarray)
+
+    if landmarks is not None:
+        assert landmarks.shape == (33, 4)
 
     detector.close()
 
@@ -22,33 +25,45 @@ def test_pose_detector_output_format():
     landmarks = detector.process(frame)
 
     if landmarks is not None:
-        assert isinstance(landmarks, list)
-        assert "x" in landmarks[0]
-        assert "y" in landmarks[0]
-        assert "z" in landmarks[0]
-        assert "visibility" in landmarks[0]
+        assert isinstance(landmarks, np.ndarray)
+        assert landmarks.shape == (33, 4)
+
+        assert np.all(landmarks[:, :3] >= -1.0)
+        assert np.all(landmarks[:, :3] <= 1.0)
+        assert np.all(landmarks[:, 3] >= 0.0)
 
     detector.close()
-
-    from unittest.mock import MagicMock
-from src.pose.detector import PoseDetector
 
 
 def test_pose_detector_mocked():
     detector = PoseDetector()
 
     fake_result = MagicMock()
-    fake_landmark = MagicMock(x=0.1, y=0.2, z=0.3, visibility=0.9)
-    fake_result.pose_landmarks.landmark = [fake_landmark] * 33
+
+    fake_landmarks = []
+    for _ in range(33):
+        lm = MagicMock()
+        lm.x = 0.1
+        lm.y = 0.2
+        lm.z = 0.3
+        lm.visibility = 0.9
+        fake_landmarks.append(lm)
+
+    fake_result.pose_landmarks.landmark = fake_landmarks
 
     detector.pose.process = MagicMock(return_value=fake_result)
 
-    import numpy as np
     frame = np.zeros((480, 640, 3), dtype=np.uint8)
 
     landmarks = detector.process(frame)
 
-    assert len(landmarks) == 33
-    assert landmarks[0]["x"] == 0.1
+    assert isinstance(landmarks, np.ndarray)
+    assert landmarks.shape == (33, 4)
+
+    # check values
+    assert np.isclose(landmarks[0, 0], 0.1)
+    assert np.isclose(landmarks[0, 1], 0.2)
+    assert np.isclose(landmarks[0, 2], 0.3)
+    assert np.isclose(landmarks[0, 3], 0.9)
 
     detector.close()

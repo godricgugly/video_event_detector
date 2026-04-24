@@ -1,7 +1,5 @@
 import numpy as np
 
-
-# MediaPipe landmark indices
 LEFT_HIP = 23
 RIGHT_HIP = 24
 LEFT_SHOULDER = 11
@@ -10,27 +8,27 @@ RIGHT_SHOULDER = 12
 
 def normalize_landmarks(landmarks):
     """
-    Input: list of 33 landmarks (dicts with x, y, z)
+    Input: np.array shape (33, 4) -> [x, y, z, visibility]
     Output: flattened normalized vector (99,)
     """
 
     if landmarks is None:
         return None
 
-    pts = np.array([[lm["x"], lm["y"], lm["z"]] for lm in landmarks])
+    # keep only xyz (drop visibility for geometry)
+    pts = landmarks[:, :3].astype(np.float32)
 
     # --- 1. center (hip midpoint) ---
-    hip_center = (pts[LEFT_HIP] + pts[RIGHT_HIP]) / 2.0
-    pts = pts - hip_center
+    hip_center = (pts[LEFT_HIP] + pts[RIGHT_HIP]) * 0.5
+    pts -= hip_center
 
     # --- 2. scale (shoulder width) ---
-    shoulder_dist = np.linalg.norm(
-        pts[LEFT_SHOULDER] - pts[RIGHT_SHOULDER]
-    )
+    shoulder_vec = pts[LEFT_SHOULDER] - pts[RIGHT_SHOULDER]
+    shoulder_dist = np.linalg.norm(shoulder_vec)
 
     if shoulder_dist < 1e-6:
-        return None  # invalid pose
+        return None
 
-    pts = pts / shoulder_dist
+    pts /= shoulder_dist
 
-    return pts.flatten()
+    return pts.reshape(-1)

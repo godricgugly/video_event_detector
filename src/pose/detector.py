@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import mediapipe as mp
 
 
@@ -8,7 +9,7 @@ class PoseDetector:
         self.pose = self.mp_pose.Pose(
             static_image_mode=False,
             model_complexity=model_complexity,
-            smooth_landmarks=True,
+            smooth_landmarks=True, # False could improve performance for long videos
             enable_segmentation=False,
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=0.5,
@@ -16,27 +17,25 @@ class PoseDetector:
 
     def process(self, frame):
         """
-        Input: BGR frame (OpenCV)
-        Output: list of landmarks or None
+        Input: BGR frame
+        Output: np.array shape (33, 4) or None
         """
 
-        # Convert BGR → RGB (IMPORTANT)
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
         result = self.pose.process(rgb_frame)
 
         if not result.pose_landmarks:
             return None
 
-        landmarks = []
-
-        for lm in result.pose_landmarks.landmark:
-            landmarks.append({
-                "x": lm.x,
-                "y": lm.y,
-                "z": lm.z,
-                "visibility": lm.visibility
-            })
+        landmarks = np.array(
+            [[
+                lm.x,
+                lm.y,
+                lm.z,
+                lm.visibility
+            ] for lm in result.pose_landmarks.landmark],
+            dtype=np.float32
+        )
 
         return landmarks
 
