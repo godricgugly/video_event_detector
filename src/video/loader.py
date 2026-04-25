@@ -2,7 +2,7 @@ import cv2
 
 
 class VideoLoader:
-    def __init__(self, video_path: str, skip_frames: int = 1):
+    def __init__(self, video_path: str, skip_frames: int = 1, roi=None):
         self.video_path = video_path
         self.cap = cv2.VideoCapture(video_path)
 
@@ -10,6 +10,7 @@ class VideoLoader:
             raise ValueError(f"Could not open video: {video_path}")
 
         self.skip_frames = max(1, skip_frames)
+        self.roi = roi  # (x, y, w, h) or None
 
         # metadata
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
@@ -29,6 +30,11 @@ class VideoLoader:
         if not ret:
             self.cap.release()
             raise StopIteration
+
+        # Apply ROI if defined
+        if self.roi is not None:
+            x, y, w, h = self.roi
+            frame = frame[y:y+h, x:x+w]
 
         return frame
 
