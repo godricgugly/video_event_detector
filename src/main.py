@@ -12,10 +12,10 @@ from src.detection.event_detector import EventDetector
 # -----------------------------
 reference_video_path = "data/references/ref_pose.mp4"
 main_video_path = "data/raw/session.mp4"
-skip_frames = 6 # Reduce for more accuracy (slower)
-similarity_threshold = 0.4 
-duration_sec = 0.1
-cooldown_sec = 3
+skip_frames = 4 # Reduce for more accuracy (slower)
+similarity_threshold = 0.25 # Lower threshold = more matches (and more false positives)
+duration_sec = 0.1 #Length of the pose hold. Lower = more matches
+cooldown_sec = 3 # Time waited after a match to continue analyzing
 model_complexity = 0  # 0 = fast, 1 = balanced, 2 = accurate
 # -----------------------------
 
