@@ -1,26 +1,3 @@
-# import cv2
-
-
-# def select_roi(video_path: str):
-#     cap = cv2.VideoCapture(video_path)
-
-#     if not cap.isOpened():
-#         raise ValueError(f"Could not open video: {video_path}")
-
-#     ret, frame = cap.read()
-#     cap.release()
-
-#     if not ret:
-#         raise ValueError("Could not read frame for ROI selection")
-
-#     roi = cv2.selectROI("Select ROI", frame, showCrosshair=True)
-#     cv2.destroyAllWindows()
-
-#     if roi == (0, 0, 0, 0):
-#         return None
-
-#     return roi  # (x, y, w, h)
-
 import cv2
 
 
