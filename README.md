@@ -20,9 +20,8 @@ Each frame in the main video is compared to the reference pose. Temporal smoothi
 ### Output
 Prints timestamps where the reference pose appears.
 
-## Notes & Considerations
-- Frame skipping is supported for faster processing of long videos. Adjust `skip_frames` as needed.
-- Similarity threshold may need tuning depending on pose variability.
+### Usage
+Self hosted app runs locally and offline, to avoid having to upload long videos.
 
 ## Stack
 Python 3.10+, OpenCV, MediaPipe, NumPy, pytest
