@@ -35,3 +35,11 @@ data/references/*
 !data/raw/.gitkeep
 !data/outputs/.gitkeep
 !data/references/.gitkeep
+
+.venv/
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+*.spec
