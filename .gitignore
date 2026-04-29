@@ -40,3 +40,4 @@ data/references/*
 dist/
 build/
 *.spec
+release/*
