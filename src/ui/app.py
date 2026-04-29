@@ -33,7 +33,7 @@ class App:
         self.root.title("Pose Event Detector")
 
         # ------------ initial opening config ------------
-        w, h = 1100, 800
+        w, h = 1100, 900
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         x = (sw - w) // 2
@@ -61,7 +61,6 @@ class App:
         scrollbar.pack(side="right", fill="y")
 
         # Mouse wheel scrolling
-        self.canvas_scroll.bind_all("<MouseWheel>", self._on_mousewheel)
         self.canvas_scroll.bind_all("<MouseWheel>", self._on_mousewheel)   # Windows / macOS
         self.canvas_scroll.bind_all("<Button-4>", self._on_mousewheel_linux)  # Linux scroll up
         self.canvas_scroll.bind_all("<Button-5>", self._on_mousewheel_linux)  # Linux scroll down
@@ -85,17 +84,87 @@ class App:
         self.cooldown_sec = 7
 
         # ---------------- layout ----------------
-        main_container = tk.Frame(self.scrollable_frame)
+        style = ttk.Style()
+        style.configure("TNotebook.Tab", font=("Arial", 12, "bold"))
+        notebook = ttk.Notebook(self.scrollable_frame)
+        notebook.pack(fill="both", expand=True)
+
+        # Home tab
+        home_tab = tk.Frame(notebook)
+        notebook.add(home_tab, text="Home")
+        main_container = tk.Frame(home_tab)
         main_container.pack()
 
+        # How-to tab
+        howto_tab = tk.Frame(notebook)
+        notebook.add(howto_tab, text="How to use")
+        howto_text = tk.Text(howto_tab, wrap="word")
+        howto_text.pack(fill="both", expand=True)
+        howto_content = """
+
+
+
+1. Adjust (or leave in the default setting):
+- Similarity Threshold
+- Skip Frames
+- Event Duration
+- Cooldown
+
+2. Select a reference video
+→ This defines the pose you want to detect
+
+3. (Optional) Draw a region of interest (ROI)
+→ Focus detection on a specific area
+
+4. Click "Build Reference Pose"
+
+5. Select your session video
+
+
+6. Click "Analyse"
+
+Tips:
+- Lower threshold = more detections (but more false positives)
+- ROI improves speed and accuracy
+- Higher model complexity = slower but more precise
+- If soemthing doesn't work, or you clicked a lot of times in the reference pose\n try closing and opening again!
+"""
+        howto_text.insert("1.0", howto_content)
+        howto_text.config(state="disabled")
+
+        # Left controls
         left_frame = tk.Frame(main_container)
         left_frame.pack(side="left")
-
-        self.right_frame = tk.Frame(main_container)
-        self.right_frame.pack(side="right", padx=10)
-
         self._build_controls(left_frame)
-        self._build_roi_panel(self.right_frame)
+
+        # Right ROI and info
+        self.right_frame = tk.Frame(main_container)
+        self.right_frame.pack(side="right", padx=10, fill="y")
+
+        # Header (always visible)
+        self.header_label = tk.Label(
+            self.right_frame,
+            text="TrickFinder proudly brought to you by Liam!\n\nCheck out the code at:\nhttps://github.com/godricgugly/video_event_detector",
+            justify="center",
+            wraplength=500,
+            font=("Arial", 12, "bold")
+        )
+        self.header_label.pack(pady=(10, 100))
+
+        # ROI container (canvas + build button)
+        self.roi_container = tk.Frame(self.right_frame)
+        self.roi_container.pack(side="top", pady=5)
+        self._build_roi_panel(self.roi_container)
+
+        # Footer (always visible)
+        self.footer_label = tk.Label(
+            self.right_frame,
+            text="If you want to send support,\nyou can tip me here ;)\n\nhttps://buymeacoffee.com/liam_watford",
+            justify="center",
+            wraplength=500,
+            font=("Arial", 12, "bold")
+        )
+        self.footer_label.pack(side="bottom", pady=50)
 
         # ---------------- threading ----------------
         self._thread = None
@@ -112,8 +181,6 @@ class App:
             self.canvas_scroll.yview_scroll(-1, "units")
         elif event.num == 5:
             self.canvas_scroll.yview_scroll(1, "units")
-
-
 
     # ---------------- build controls ----------------
     def _build_controls(self, parent):
@@ -182,9 +249,7 @@ class App:
 
         self.output = tk.Text(output_frame, height=10, wrap="word")
         output_scroll = tk.Scrollbar(output_frame, command=self.output.yview)
-
         self.output.configure(yscrollcommand=output_scroll.set)
-
         self.output.pack(side="left", fill="both", expand=True)
         output_scroll.pack(side="right", fill="y")
 
@@ -192,10 +257,8 @@ class App:
     def _build_roi_panel(self, parent):
         self.roi_label = tk.Label(parent, text="Region of interest selection", font=("Arial", 11, "bold"))
         self.roi_label.pack()
-
         self.canvas = tk.Canvas(parent, bg="black")
         self.canvas.pack()
-
         self.build_button = tk.Button(parent, text="Build Reference Pose", command=self.build_reference)
         self.build_button.pack(pady=5)
 
@@ -214,9 +277,9 @@ class App:
 
     def toggle_roi_panel(self):
         if self.roi_var.get():
-            self.right_frame.pack_forget()
+            self.roi_container.pack_forget()
         else:
-            self.right_frame.pack(side="right", padx=10)
+            self.roi_container.pack(side="top", pady=5)
 
     def update_cooldown_label(self, val):
         x = float(val)
@@ -405,6 +468,7 @@ class App:
         self.output.delete("1.0", tk.END)
         if results:
             self.output.insert(tk.END, "Events:\n" + "\n".join(results))
+            self.output.insert(tk.END, "\n\nThanks for using the Trickfinder, I hope you landed awesome stuff! =D")
         else:
             self.output.insert(tk.END, "No events detected.")
 
