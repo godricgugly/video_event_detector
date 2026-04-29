@@ -32,6 +32,40 @@ class App:
         self.root = root
         self.root.title("Pose Event Detector")
 
+        # ------------ initial opening config ------------
+        w, h = 1100, 800
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
+        x = (sw - w) // 2
+        y = (sh - h) // 2
+        self.root.geometry(f"{w}x{h}+{x}+{y}")
+
+        # ---------------- scrollable root ----------------
+        outer_frame = tk.Frame(root)
+        outer_frame.pack(fill="both", expand=True)
+
+        self.canvas_scroll = tk.Canvas(outer_frame)
+        scrollbar = tk.Scrollbar(outer_frame, orient="vertical", command=self.canvas_scroll.yview)
+
+        self.scrollable_frame = tk.Frame(self.canvas_scroll)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas_scroll.configure(scrollregion=self.canvas_scroll.bbox("all"))
+        )
+
+        self.canvas_scroll.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas_scroll.configure(yscrollcommand=scrollbar.set)
+
+        self.canvas_scroll.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Mouse wheel scrolling
+        self.canvas_scroll.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.canvas_scroll.bind_all("<MouseWheel>", self._on_mousewheel)   # Windows / macOS
+        self.canvas_scroll.bind_all("<Button-4>", self._on_mousewheel_linux)  # Linux scroll up
+        self.canvas_scroll.bind_all("<Button-5>", self._on_mousewheel_linux)  # Linux scroll down
+
         # ---------------- file paths ----------------
         self.ref_path = tk.StringVar()
         self.main_path = tk.StringVar()
@@ -51,7 +85,7 @@ class App:
         self.cooldown_sec = 7
 
         # ---------------- layout ----------------
-        main_container = tk.Frame(root)
+        main_container = tk.Frame(self.scrollable_frame)
         main_container.pack()
 
         left_frame = tk.Frame(main_container)
@@ -68,15 +102,26 @@ class App:
         self._stop_event = threading.Event()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
+    # ---------------- mouse scroll ----------------
+    def _on_mousewheel(self, event):
+        if event.delta:
+            self.canvas_scroll.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def _on_mousewheel_linux(self, event):
+        if event.num == 4:
+            self.canvas_scroll.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self.canvas_scroll.yview_scroll(1, "units")
+
+
+
     # ---------------- build controls ----------------
     def _build_controls(self, parent):
-        # Similarity Threshold
         tk.Label(parent, text="Similarity Threshold", font=("Arial", 12, "bold")).pack()
         self.threshold = tk.DoubleVar(value=0.25)
         tk.Scale(parent, from_=0.1, to=0.7, resolution=0.05,
                  orient="horizontal", variable=self.threshold, length=300).pack()
 
-        # Skip Frames
         tk.Label(parent).pack()
         tk.Label(parent, text="Skip Frames", font=("Arial", 12, "bold")).pack()
         self.skip_frames = tk.IntVar(value=4)
@@ -85,14 +130,12 @@ class App:
         for n in range(2, 11):
             tk.Radiobutton(f, text=str(n), variable=self.skip_frames, value=n).pack(side="left")
 
-        # Event Duration
         tk.Label(parent).pack()
         tk.Label(parent, text="Event Duration", font=("Arial", 12, "bold")).pack()
         self.duration_sec = tk.DoubleVar(value=0.1)
         tk.Scale(parent, from_=0.1, to=0.7, resolution=0.1,
                  orient="horizontal", variable=self.duration_sec, length=300).pack()
 
-        # Cooldown
         tk.Label(parent).pack()
         tk.Label(parent, text="Cooldown", font=("Arial", 12, "bold")).pack()
         self.cooldown_raw = tk.DoubleVar(value=0.0)
@@ -103,7 +146,6 @@ class App:
         self.cooldown_label = tk.Label(parent, text=f"Cooldown: {self.cooldown_sec} s")
         self.cooldown_label.pack()
 
-        # Model Complexity
         tk.Label(parent).pack()
         tk.Label(parent, text="Model Complexity", font=("Arial", 12, "bold")).pack()
         self.model_complexity = tk.IntVar(value=0)
@@ -112,7 +154,6 @@ class App:
         for i, label in enumerate(["Fast!", "Balanced", "Extra precise"]):
             tk.Radiobutton(mf, text=label, variable=self.model_complexity, value=i).pack(side="left")
 
-        # ROI toggle
         tk.Label(parent).pack()
         self.roi_var = tk.BooleanVar(value=False)
         tk.Checkbutton(
@@ -122,7 +163,6 @@ class App:
             command=self.toggle_roi_panel
         ).pack()
 
-        # File selection
         tk.Label(parent).pack()
         tk.Button(parent, text="Select Reference Video", command=self.select_ref).pack()
         tk.Label(parent, textvariable=self.ref_path).pack()
@@ -130,17 +170,23 @@ class App:
         tk.Button(parent, text="Select Session Video", command=self.select_main).pack()
         tk.Label(parent, textvariable=self.main_path).pack()
 
-        # Progress bar
         self.progress = ttk.Progressbar(parent, length=300)
         self.progress.pack(pady=10)
 
-        # Run button
         self.run_button = tk.Button(parent, text="Analyse", command=self.run)
         self.run_button.pack()
 
-        # Output text
-        self.output = tk.Text(parent, height=10)
-        self.output.pack()
+        # -------- output with scrollbar --------
+        output_frame = tk.Frame(parent)
+        output_frame.pack(fill="both", expand=True)
+
+        self.output = tk.Text(output_frame, height=10, wrap="word")
+        output_scroll = tk.Scrollbar(output_frame, command=self.output.yview)
+
+        self.output.configure(yscrollcommand=output_scroll.set)
+
+        self.output.pack(side="left", fill="both", expand=True)
+        output_scroll.pack(side="right", fill="y")
 
     # ---------------- build ROI panel ----------------
     def _build_roi_panel(self, parent):
@@ -166,27 +212,23 @@ class App:
         self.build_button.config(state=state)
         self.run_button.config(state=state)
 
-    # ---------------- ROI panel toggle ----------------
     def toggle_roi_panel(self):
         if self.roi_var.get():
             self.right_frame.pack_forget()
         else:
             self.right_frame.pack(side="right", padx=10)
 
-    # ---------------- cooldown ----------------
     def update_cooldown_label(self, val):
         x = float(val)
         self.cooldown_sec = round(3 * ((60 / 3) ** x))
         self.cooldown_label.config(text=f"Cooldown: {self.cooldown_sec} s")
 
-    # ---------------- file selection ----------------
     def select_ref(self):
         path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.avi *.mov")])
         if path:
             self.ref_path_full = path
             self.ref_path.set(os.path.basename(path))
 
-            # Update ROI display
             self.selected_roi = None
             frame = get_frame(path)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -211,7 +253,6 @@ class App:
             self.main_path_full = path
             self.main_path.set(os.path.basename(path))
 
-    # ---------------- ROI selection ----------------
     def on_mouse_down(self, event):
         self.roi_start = (event.x, event.y)
         if self.roi_rect:
@@ -249,7 +290,7 @@ class App:
             int(h / scale),
         )
 
-    # ---------------- build reference pose ----------------
+
     def build_reference(self):
         if self._busy:
             return
@@ -311,7 +352,6 @@ class App:
         if self.roi_rect:
             self.canvas.itemconfig(self.roi_rect, outline="red")
 
-    # ---------------- run detection ----------------
     def run(self):
         if self._busy:
             return
@@ -357,7 +397,6 @@ class App:
         except Exception as e:
             self.root.after(0, self.show_error, str(e))
 
-    # ---------------- UI helpers ----------------
     def safe_update_progress(self, progress):
         self.root.after(0, lambda: self.progress.configure(value=progress * 100))
 
@@ -374,7 +413,6 @@ class App:
         self.output.delete("1.0", tk.END)
         self.output.insert(tk.END, f"ERROR:\n{msg}")
 
-    # ---------------- window close ----------------
     def on_close(self):
         self._stop_event.set()
         self.root.destroy()
