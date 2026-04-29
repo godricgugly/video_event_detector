@@ -30,7 +30,7 @@ def get_frame(video_path, frame_index=2):
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Pose Event Detector")
+        self.root.title("Trick Finder!")
 
         # ------------ initial opening config ------------
         w, h = 1100, 900
@@ -101,8 +101,18 @@ class App:
         howto_text = tk.Text(howto_tab, wrap="word")
         howto_text.pack(fill="both", expand=True)
         howto_content = """
+While filming your session:
+
+1.  Make sure the camera is static.
+
+2.  When you first get on the line (around the location where you'll be freestyling), make your pose and hold it for 3-4s (ej. look at the camera and cross your arms).
+
+3.  Every time something happens that you want to locate after, make your pose again and hold it for 2-3s (the more similar you make the pose, the easiar it'll be for the program to find it!)
+
+4.  Take the clip of your reference pose with a video editor of your choice (should be easy to locate, since you did it at the beginning of your session, right? ;) ).
 
 
+Then to use the program:
 
 1. Adjust (or leave in the default setting):
 - Similarity Threshold
@@ -120,14 +130,15 @@ class App:
 
 5. Select your session video
 
-
 6. Click "Analyse"
+
+7. Go chill... or, look obsesively at that progress bar, up to you!
 
 Tips:
 - Lower threshold = more detections (but more false positives)
 - ROI improves speed and accuracy
-- Higher model complexity = slower but more precise
-- If soemthing doesn't work, or you clicked a lot of times in the reference pose\n try closing and opening again!
+- If soemthing doesn't work, or you clicked a lot of times in the reference pose → try closing and opening again!
+- If you forgot to do a reference pose during your session, you can look for something you're likely to do after something that you'd want to access has happened (ej. Sitting on the line to rest up?... you know yourself on the line, you decide ;) )
 """
         howto_text.insert("1.0", howto_content)
         howto_text.config(state="disabled")
