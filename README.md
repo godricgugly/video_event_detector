@@ -42,65 +42,65 @@ Check the Releases for terminal-free usage (No need to download python or pip ei
 
 ### Installation
 
--> Bash:
-git clone https://github.com/godricgugly/video_event_detector.git
-cd video_event_detector
-source .venv/bin/activate
-pip install -r requirements.txt
+-> Bash:  
+git clone https://github.com/godricgugly/video_event_detector.git  
+cd video_event_detector  
+source .venv/bin/activate  
+pip install -r requirements.txt  
 
 ### Usage
 
-activate virtual environment!
--> Bash
-source .venv/bin/activate
+activate virtual environment!  
+-> Bash  
+source .venv/bin/activate  
 
-UI:
+UI:  
 python run.py
 
-No UI:
+No UI: 
 python src/app/main.py
 
-*for this you must populate:
-    data/references/ref_pose.mp4
-    data/raw/session.mp4
+*for this you must populate:  
+    data/references/ref_pose.mp4  
+    data/raw/session.mp4  
 
 ### tests
 
--> Bash
+-> Bash  
 pytest
 
 Covers:
 
--normalization
--similarity
--event detection
--video loading
--reference building
+-normalization  
+-similarity  
+-event detection  
+-video loading  
+-reference building  
 
 ### Configuration:
 
 You may need to tune parameters depending on your footage:
 
-Similarity threshold
-Frame skip rate
-Detection cooldown window
+Similarity threshold  
+Frame skip rate  
+Detection cooldown window  
 
 ## Design goals
 
-Offline first
-No training required
-Fast CPU execution
-Modular pipeline
-Temporal smoothing for stability
+Offline first  
+No training required  
+Fast CPU execution (no GPU)  
+Modular pipeline  
+Temporal smoothing for stability  
 
 ## Stack
 
-Python 3.10+
-MediaPipe
-OpenCV
-NumPy
-Tkinter
-pytest
+Python 3.10+,
+MediaPipe,
+OpenCV,
+NumPy,
+Tkinter,
+pytest,
 
 ## Screenshot
 
