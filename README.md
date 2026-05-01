@@ -1,27 +1,107 @@
-# Video Event Detector (Pose-based)
+# TrickFinder  
+### Video Event Detection Using Pose Similarity (Offline)
 
-Detects occurrences of a reference pose in a video using MediaPipe.
+TrickFinder is an **offline computer vision tool** that detects when a reference pose appears in a video and returns timestamps.
 
-## Motivation & Goals
+It uses **MediaPipe pose estimation** and lightweight similarity matching to analyze movement in sports, tricks, and training footage.
 
-This project aims to provide a lightweight, pose-based event detection system for sports or movement analysis. By leveraging MediaPipe's pose estimation, it allows users to define key reference poses and automatically identify when they appear in a video. The goal is to create a robust MVP that can reliably detect events without manual annotation, providing timestamps for quick review.
+---
+
+## Features
+
+- Detects matching poses in video sequences
+- Uses 33-point MediaPipe pose landmarks
+- Fast CPU-based processing (no GPU required)
+- Fully offline (no API or cloud dependency)
+- Temporal smoothing for stable detection
+- Modular and extensible pipeline
+
+---
 
 ## How It Works
 
-### Reference Pose
-Provide a short reference video (~2–3 seconds) of the pose you want to detect. The system averages landmarks across frames to build a stable reference.
+1. Extract pose landmarks (MediaPipe)
+2. Normalize pose (scale + translation invariance)
+3. Build reference pose from a short clip
+4. Compare each frame against reference
+5. Apply similarity threshold + cooldown filtering
+6. Output match timestamps
 
-### Pose Detection
-MediaPipe extracts 33 landmarks per frame (x, y, z). Landmarks are normalized to be relative to the hips and scaled by shoulder width.
+---
 
-### Similarity & Event Detection
-Each frame in the main video is compared to the reference pose. Temporal smoothing ensures events are only triggered when similarity is consistently above a threshold.
+## Getting Started
 
-### Output
-Prints timestamps where the reference pose appears.
+### Release for non technical audience
+
+Check the Releases for terminal-free usage (No need to download python or pip either)
+
+### Prerequisites
+
+- Python 3.10+
+- pip
+
+### Installation
+
+-> Bash:
+git clone https://github.com/godricgugly/video_event_detector.git
+cd video_event_detector
+source .venv/bin/activate
+pip install -r requirements.txt
 
 ### Usage
-Self hosted app runs locally and offline, to avoid having to upload long videos.
+
+activate virtual environment!
+-> Bash
+source .venv/bin/activate
+
+UI:
+python run.py
+
+No UI:
+python src/app/main.py
+
+*for this you must populate:
+    data/references/ref_pose.mp4
+    data/raw/session.mp4
+
+### tests
+
+-> Bash
+pytest
+
+Covers:
+
+-normalization
+-similarity
+-event detection
+-video loading
+-reference building
+
+### Configuration:
+
+You may need to tune parameters depending on your footage:
+
+Similarity threshold
+Frame skip rate
+Detection cooldown window
+
+## Design goals
+
+Offline first
+No training required
+Fast CPU execution
+Modular pipeline
+Temporal smoothing for stability
 
 ## Stack
-Python 3.10+, OpenCV, MediaPipe, NumPy, pytest
+
+Python 3.10+
+MediaPipe
+OpenCV
+NumPy
+Tkinter
+pytest
+
+## Screenshot
+
+![TrickFinder demo](assets/demo.png)
