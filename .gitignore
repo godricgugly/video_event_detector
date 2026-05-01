@@ -35,3 +35,9 @@ data/references/*
 !data/raw/.gitkeep
 !data/outputs/.gitkeep
 !data/references/.gitkeep
+
+
+dist/
+build/
+*.spec
+release/*
